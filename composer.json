@@ -12,7 +12,6 @@
     "autoload": {
         "classmap": [
             "app/models",
-            "app/classes",
             "app/services"
         ]
     }

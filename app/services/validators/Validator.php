@@ -6,8 +6,13 @@ abstract class Validator {
 
     protected $data;
     protected $fields;
+    protected $validator;
     public $errors;
     public static $rules;
+    public static $messages = array(
+        'required' => 'The :attribute field is required.',
+        'email' => 'Invalid e-mail address!',
+    );
 
     public function __construct($data = null) {
         $this->data = $data;
@@ -17,15 +22,21 @@ abstract class Validator {
     public function passes() {
         $translator = new \Symfony\Component\Translation\Translator('en');
         $factory = new \Illuminate\Validation\Factory($translator);
-        
-        $validation = $factory->make($this->data, static::$rules);
 
-        if ($validation->passes())
+        $this->validator = $factory->make($this->data, static::$rules, static::$messages);
+
+        if ($this->validator->passes())
             return true;
 
-        $this->errors = $validation->messages();
-
         return false;
+    }
+
+    public function getValidator() {
+        return $this->validator;
+    }
+
+    public function getData() {
+        return $this->data;
     }
 
     protected function extractData() {
