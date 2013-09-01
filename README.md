@@ -5,10 +5,10 @@ life-bank-api
 Usage
 ---------
 
-Install composer and run composer install to download the dependencies <br/>
-Create .htaccess file by copying the content in the template.htaccess file <br/>
-Create config/app.ini by copying content in the template.app.ini file <br/> 
-The database file is contained in the schema folder <br/>
+-> Install composer and run "composer install" to download the dependencies <br/>
+-> Create .htaccess file by copying the content in the template.htaccess file <br/>
+-> Create config/app.ini by copying content in the template.app.ini file <br/> 
+-> The database file is contained in the schema folder <br/>
 
 
 
