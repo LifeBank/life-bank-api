@@ -37,6 +37,7 @@ Sentry::setupDatabaseResolver(new PDO($dsn, $user, $password));
 
 /**
  * @todo add log settings  
+ * @todo log api calls and response
  */
 $app = new \Slim\Slim(array(
             'mode' => 'development',
@@ -65,4 +66,5 @@ require_once 'app/routes/locations.php';
 require_once 'app/routes/bloodgroups.php';
 
 $app->run();
+
 ?>
