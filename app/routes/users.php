@@ -23,7 +23,7 @@ $app->get('/user/get', function () use ($app) {
 
 $app->post('/user/login', function () use ($app) {
     $error_occured = false;
-    $loginValidator = new App\Services\Validators\LoginValidator($app->request->params());
+    $loginValidator = new App\Services\Validators\LoginValidator($app->request()->params());
 
     if ($loginValidator->passes()) {
 
@@ -51,7 +51,7 @@ $app->post('/user/login', function () use ($app) {
 
 $app->post('/user/registration', function () use ($app) {
     $error_occured = false;
-    $signupValidator = new App\Services\Validators\SignupValidator($app->request->params());
+    $signupValidator = new App\Services\Validators\SignupValidator($app->request()->params());
 
     if ($signupValidator->passes()) {
 
@@ -96,7 +96,7 @@ $app->post('/user/update', function () use ($app) {
         send_response(array("status" => 0, "errors" => array("User ID not recieved")));
     }
 
-    $updateValidator = new App\Services\Validators\UpdateValidator($app->request->params());
+    $updateValidator = new App\Services\Validators\UpdateValidator($app->request()->params());
 
     if ($updateValidator->passes()) {
 
