@@ -4,6 +4,7 @@ $app = Slim::getInstance();
 
 $app->get('/bloodgroups/all', function () use ($app) {
              $blood_groups = array(
+                 'Not Sure',
                  'A-',
                  'A+',
                  'AB-',

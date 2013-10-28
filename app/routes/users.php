@@ -6,7 +6,7 @@ $app = Slim::getInstance();
 
 
 $app->get('/user/get', function () use ($app) {
-    $user_id = (int) $app->request()->get('id');    
+    $user_id = (int) $app->request()->get('id');
     if (!$user_id) {
         send_response(array("status" => 0, "errors" => array("User ID not recieved")));
     }
@@ -14,6 +14,27 @@ $app->get('/user/get', function () use ($app) {
     try {
         $user = Sentry::getUserProvider()->findById($user_id);
         send_response(array("status" => 1, "user" => get_user_attributes($user)));
+    } catch (Cartalyst\Sentry\Users\UserNotFoundException $e) {
+        send_response(array("status" => 0, "errors" => array('User not found')));
+    }
+});
+
+$app->get('/user/get_with_username', function () use ($app) {
+    $username = $app->request()->get('username');
+    if (!$username) {
+        send_response(array("status" => 0, "errors" => array("Username not recieved")));
+    }
+
+    try {
+        $userProvider = Sentry::getUserProvider();
+        $model = $userProvider->createModel();
+        $user = $model->newQuery()->where("username", '=', $username)->first();
+
+        if ($user) {
+            send_response(array("status" => 1, "user" => get_user_attributes($user)));
+        } else {
+            send_response(array("status" => 0, "errors" => array('User not found')));
+        }
     } catch (Cartalyst\Sentry\Users\UserNotFoundException $e) {
         send_response(array("status" => 0, "errors" => array('User not found')));
     }
@@ -65,6 +86,7 @@ $app->post('/user/registration', function () use ($app) {
                         'first_name' => $data['first_name'],
                         'last_name' => $data['last_name'],
                         'phone_number' => $data['phone_number'],
+                        'username' => $data['username'],
                         'location' => $data['location'],
                         'blood_group' => $data['blood_group'],
                         'image_path' => $data['image_path'],
@@ -80,8 +102,12 @@ $app->post('/user/registration', function () use ($app) {
             send_response(array("status" => 0, "errors" => array('User with email already exists')));
         }
 
+
         if (!$error_occured)
-            send_response(array("status" => 1, "message" => "User registered successfully"));
+            if ($user)
+                send_response(array("status" => 1, "message" => "User registered successfully"));
+            else
+                send_response(array("status" => 0, "errors" => array('An error occured')));
     } else {
         $errors = $signupValidator->getValidator()->messages()->all();
         send_response(array("status" => 0, "errors" => $errors));
