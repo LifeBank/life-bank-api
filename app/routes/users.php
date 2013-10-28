@@ -82,7 +82,6 @@ $app->post('/user/registration', function () use ($app) {
 
             $user = Sentry::register(array(
                         'email' => $data['email'],
-                        'password' => $data['password'],
                         'first_name' => $data['first_name'],
                         'last_name' => $data['last_name'],
                         'phone_number' => $data['phone_number'],
@@ -90,6 +89,7 @@ $app->post('/user/registration', function () use ($app) {
                         'location' => $data['location'],
                         'blood_group' => $data['blood_group'],
                         'image_path' => $data['image_path'],
+                        'password' => 'nill',
                         'status' => 1,
                         'permissions' => array(
                             'test' => 1,

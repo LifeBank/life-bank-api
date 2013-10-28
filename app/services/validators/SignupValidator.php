@@ -16,7 +16,6 @@ class SignupValidator extends Validator {
         'email',
         'phone_number',
         'location',
-        'password',
         'blood_group',
         'image_path',
         'username'
@@ -27,7 +26,6 @@ class SignupValidator extends Validator {
         'email' => 'required|email',
         'phone_number' => 'required',
         'location' => 'required',
-        'password' => 'required',
         'blood_group' => 'required'
     );
 
