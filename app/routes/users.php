@@ -41,6 +41,37 @@ $app->get('/user/get_with_username', function () use ($app) {
 });
 
 
+$app->get('/users/random', function () use ($app) {
+    $count = (int) $app->request()->get('count');
+	$count = ($count) ? $count : 4;
+	
+    try {
+        $userProvider = Sentry::getUserProvider();
+        $model = $userProvider->createModel();
+        $user = $model->newQuery()->where("username", '=', $username)->get();
+
+        if ($user) {
+            send_response(array("status" => 1, "user" => get_user_attributes($user)));
+        } else {
+            send_response(array("status" => 0, "errors" => array('User not found')));
+        }
+    } catch (Cartalyst\Sentry\Users\UserNotFoundException $e) {
+        send_response(array("status" => 0, "errors" => array('User not found')));
+    }
+});
+
+$app->get('/users/count', function () use ($app) {
+   
+    try {
+		 $count = User::all()->count();
+       send_response(array("status" => 1, "user" => get_user_attributes($user)));
+        
+    } catch (Exception $e) {
+        send_response(array("status" => 0, "errors" => array('An error occured')));
+    }
+});
+
+
 
 $app->post('/user/login', function () use ($app) {
     $error_occured = false;
@@ -86,7 +117,7 @@ $app->post('/user/registration', function () use ($app) {
                         'last_name' => $data['last_name'],
                         'phone_number' => $data['phone_number'],
                         'username' => $data['username'],
-                        'location' => $data['location'],
+                        'location_id' => $data['location_id'],
                         'blood_group' => $data['blood_group'],
                         'image_path' => $data['image_path'],
                         'password' => 'nill',
@@ -110,6 +141,7 @@ $app->post('/user/registration', function () use ($app) {
                 send_response(array("status" => 0, "errors" => array('An error occured')));
     } else {
         $errors = $signupValidator->getValidator()->messages()->all();
+        $errors[] = $data['location_id'];
         send_response(array("status" => 0, "errors" => $errors));
     }
 });
