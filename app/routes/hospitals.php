@@ -101,6 +101,22 @@ $app->get('/hospital/get_by_name', function () use ($app) {
     }
 });
 
+$app->get('/hospital/delete', function () use ($app) {
+    $hospital_id = (int) $app->request()->get('hospital_id');
+    if (!$hospital_id) {
+        send_response(array("status" => 0, "errors" => array("Hospital ID not recieved")));
+    }
+
+    $hospital= Hospital::where('id', '=', $hospital_id)->first();
+    $deleted = $hospital->delete();
+
+    if (!$deleted) {
+        send_response(array("status" => 0, "errors" => array("An error occured")));
+    } else {
+        send_response(array("status" => 1, "success" => "Hospital has been deleted"));
+    }
+});
+
 $app->post('/hospital/add', function () use ($app) {
     $hospitalValidator = new App\Services\Validators\HospitalValidator($app->request()->params());
 

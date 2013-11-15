@@ -99,6 +99,22 @@ $app->get('/location/get_by_name', function () use ($app) {
     }
 });
 
+$app->get('/location/delete', function () use ($app) {
+    $location_id = (int) $app->request()->get('location_id');
+    if (!$location_id) {
+        send_response(array("status" => 0, "errors" => array("Location ID not recieved")));
+    }
+
+    $location = Location::where('id', '=', $location_id)->first();
+    $deleted = $location->delete();
+
+    if (!$deleted) {
+        send_response(array("status" => 0, "errors" => array("An error occured")));
+    } else {
+        send_response(array("status" => 1, "success" => "Location has been deleted"));
+    }
+});
+
 $app->post('/location/add', function () use ($app) {
     $locationValidator = new App\Services\Validators\LocationValidator($app->request()->params());
 

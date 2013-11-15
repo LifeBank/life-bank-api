@@ -11,14 +11,17 @@ class Location extends Illuminate\Database\Eloquent\Model {
     }
 
     public function parent() {
-    return $this->belongsTo('Location', 'parent_id');
-
-
+        return $this->belongsTo('Location', 'parent_id');
     }
 
-public function state() {
-    return $this->belongsTo('State');
-}
+    public function state() {
+        return $this->belongsTo('State');
+    }
+    
+    public function delete() {
+        HospitalLocation::where("location_id", $this->id)->delete();
+        return parent::delete();
+    }
 
 }
 
