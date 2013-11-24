@@ -65,6 +65,7 @@ require_once 'app/routes/users.php';
 require_once 'app/routes/locations.php';
 require_once 'app/routes/bloodgroups.php';
 require_once 'app/routes/hospitals.php';
+require_once 'app/routes/faqs.php';
 
 $app->run();
 
