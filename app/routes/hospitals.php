@@ -15,7 +15,7 @@ $app->get('/hospital/get', function () use ($app) {
         send_response(array("status" => 0, "errors" => array("Hospital ID not recieved")));
     }
 
-    $hospital = get_location($hospital_id);
+    $hospital = get_hospital($hospital_id);
 
     if (is_null($hospital)) {
         send_response(array("status" => 0, "errors" => array("Hospital not found")));
@@ -30,6 +30,26 @@ $app->post('/hospital/add_location', function () use ($app) {
 
     if (!$hospital_id || !$location_id) {
         send_response(array("status" => 0, "errors" => array("Location ID and Hospital ID expected")));
+    }
+
+    $hLocation = new HospitalLocation();
+    $hLocation->hospital_id = $hospital_id;
+    $hLocation->location_id = $location_id;
+    $saved = $hLocation->save();
+
+    if ($saved) {
+        send_response(array("status" => 1, "message" => "Hospital Location Saved"));
+    } else {
+        send_response(array("status" => 0, "errors" => array("An error occured")));
+    }
+});
+
+$app->post('/hospital/broadcast', function () use ($app) {
+    $hospital_id = (int) $app->request()->post('hospital_id');
+    $message = $app->request()->post('message');
+
+    if (!$hospital_id || !$message) {
+        send_response(array("status" => 0, "errors" => array("Message and Hospital ID expected")));
     }
 
     $hLocation = new HospitalLocation();

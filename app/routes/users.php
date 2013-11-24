@@ -40,18 +40,18 @@ $app->get('/user/get_with_username', function () use ($app) {
     }
 });
 
-
-$app->get('/users/random', function () use ($app) {
-    $count = (int) $app->request()->get('count');
-	$count = ($count) ? $count : 4;
-	
+$app->get('/user/list', function () use ($app) {
     try {
-        $userProvider = Sentry::getUserProvider();
-        $model = $userProvider->createModel();
-        $user = $model->newQuery()->where("username", '=', $username)->get();
 
-        if ($user) {
-            send_response(array("status" => 1, "user" => get_user_attributes($user)));
+        $users = array();
+        $result = Sentry::getUserProvider()->findAll();
+
+        foreach ($result as $row) {
+            $users[] = get_user_attributes($row);
+        }
+
+        if ($users) {
+            send_response(array("status" => 1, "users" => $users));
         } else {
             send_response(array("status" => 0, "errors" => array('User not found')));
         }
@@ -60,15 +60,39 @@ $app->get('/users/random', function () use ($app) {
     }
 });
 
-$app->get('/users/count', function () use ($app) {
-   
+
+$app->get('/user/random', function () use ($app) {
+    $count = (int) $app->request()->get('count');
+    $count = ($count) ? $count : 5;
+
     try {
-		 $count = User::all()->count();
-       send_response(array("status" => 1, "user" => get_user_attributes($user)));
-        
-    } catch (Exception $e) {
-        send_response(array("status" => 0, "errors" => array('An error occured')));
+
+        $users = array();
+        $userProvider = Sentry::getUserProvider();
+        $model = $userProvider->createModel();
+        $result = $model->newQuery()->where("id", '>', 0)->take($count)->get();
+
+        foreach ($result as $row) {
+            $users[] = get_user_attributes($row);
+        }
+
+        if ($users) {
+            send_response(array("status" => 1, "users" => $users));
+        } else {
+            send_response(array("status" => 0, "errors" => array('User not found')));
+        }
+    } catch (Cartalyst\Sentry\Users\UserNotFoundException $e) {
+        send_response(array("status" => 0, "errors" => array('User not found')));
     }
+});
+
+$app->get('/user/count', function () use ($app) {
+    $userProvider = Sentry::getUserProvider();
+    $model = $userProvider->createModel();
+    $count = $model->newQuery()->where('id', '>', 0)->count();
+
+
+    send_response(array("status" => 1, "count" => $count));
 });
 
 
@@ -134,11 +158,28 @@ $app->post('/user/registration', function () use ($app) {
         }
 
 
-        if (!$error_occured)
-            if ($user)
+        if (!$error_occured) {
+            if ($user) {
+
+                $user_hospitals = (array) $data['user_hospitals'];
+
+                if ($user_hospitals) {
+                    $userProvider = Sentry::getUserProvider();
+                    $model = $userProvider->createModel();
+                    $user = $model->newQuery()->where("username", '=', $data['username'])->first();
+
+                    foreach ($user_hospitals as $hospital) {
+                        $uHospital = new UserHospital();
+                        $uHospital->hospital_id = $hospital;
+                        $uHospital->user_id = $user->id;
+                        $uHospital->save();
+                    }
+                }
                 send_response(array("status" => 1, "message" => "User registered successfully"));
-            else
+            } else {
                 send_response(array("status" => 0, "errors" => array('An error occured')));
+            }
+        }
     } else {
         $errors = $signupValidator->getValidator()->messages()->all();
         $errors[] = $data['location_id'];
@@ -188,17 +229,18 @@ function get_user_attributes($user) {
     $attributes['email'] = $user->email;
     $attributes['phone_number'] = $user->phone_number;
 
-    $location = $user->location;
-    $location = unserialize($location);
+    require_once 'locations.php';
+    $attributes['location'] = get_location($user->location_id);
 
-    $attributes['location'] = $location['location'];
     $attributes['blood_group'] = $user->blood_group;
-    $attributes['image_path'] = $user->image_path;
+    //str_replace($attributes, $replace, $subject);
+    $attributes['image_path'] = str_replace("_normal", "_bigger", $user->image_path);
     $attributes['status'] = $user->status;
     $attributes['first_name'] = $user->first_name;
     $attributes['last_name'] = $user->last_name;
     $attributes['created_at'] = $user->created_at;
     $attributes['updated_at'] = $user->updated_at;
+    $attributes['username'] = $user->username;
 
 
 
