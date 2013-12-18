@@ -14,14 +14,15 @@ class UpdateValidator extends Validator {
         'first_name',
         'last_name',
         'phone_number',
-        'location',
-        'blood_group'
+        'location_id',
+        'blood_group',
+        'user_hospitals'
     );
     public static $rules = array(
-        'first_name' => 'required|min:5',
-        'last_name' => 'required|min:5',
+        'first_name' => 'required',
+        'last_name' => 'required',
         'phone_number' => 'required',
-        'location' => 'required',
+        'location_id' => 'required',
         'blood_group' => 'required'
     );
 

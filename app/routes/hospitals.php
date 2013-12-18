@@ -47,21 +47,37 @@ $app->post('/hospital/add_location', function () use ($app) {
 $app->post('/hospital/broadcast', function () use ($app) {
     $hospital_id = (int) $app->request()->post('hospital_id');
     $message = $app->request()->post('message');
+    $blood_groups = (array) $app->request()->post('blood_groups');
 
     if (!$hospital_id || !$message) {
         send_response(array("status" => 0, "errors" => array("Message and Hospital ID expected")));
     }
 
-    $hLocation = new HospitalLocation();
-    $hLocation->hospital_id = $hospital_id;
-    $hLocation->location_id = $location_id;
-    $saved = $hLocation->save();
-
-    if ($saved) {
-        send_response(array("status" => 1, "message" => "Hospital Location Saved"));
-    } else {
-        send_response(array("status" => 0, "errors" => array("An error occured")));
+    if (empty($blood_groups)) {
+        send_response(array("status" => 0, "errors" => array("Blood group expected")));
     }
+
+
+    $blood_groups = "('" . implode("','", $blood_groups) . "')";
+    $users = UserHospital::select('users.email')->join('users', 'users.id', '=', 'user_hospital.user_id')->whereRaw("hospital_id = $hospital_id AND blood_group IN {$blood_groups}")->get();
+    //var_dump($users);
+
+    $emails = array();
+    foreach ($users as $user) {
+        $emails[] = $user->email;
+    }
+
+    $hospital = get_hospital($hospital_id);
+    $to = implode(",", $emails);
+    $subject = "{$hospital->hospital_name} needs blood";
+
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=iso-8859-1" . "\r\n";
+    $headers .= 'From: <donate@lifebankapp.com>' . "\r\n";
+
+    mail($to, $subject, $message, $headers);
+    
+    send_response(array("status" => 1, "message" => $users->toArray(), $blood_groups, $hospital_id));
 });
 
 $app->post('/hospital/delete_location', function () use ($app) {
@@ -127,7 +143,7 @@ $app->get('/hospital/delete', function () use ($app) {
         send_response(array("status" => 0, "errors" => array("Hospital ID not recieved")));
     }
 
-    $hospital= Hospital::where('id', '=', $hospital_id)->first();
+    $hospital = Hospital::where('id', '=', $hospital_id)->first();
     $deleted = $hospital->delete();
 
     if (!$deleted) {

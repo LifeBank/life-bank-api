@@ -18,11 +18,12 @@ class SignupValidator extends Validator {
         'location_id',
         'blood_group',
         'image_path',
-        'username'
+        'username',
+        'user_hospitals'
     );
     public static $rules = array(
-        'first_name' => 'required|min:1',
-        'last_name' => 'required|min:1',
+        'first_name' => 'required',
+        'last_name' => 'required',
         'email' => 'required|email',
         'phone_number' => 'required',
         'location_id' => 'required',

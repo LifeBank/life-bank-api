@@ -161,20 +161,13 @@ $app->post('/user/registration', function () use ($app) {
         if (!$error_occured) {
             if ($user) {
 
+                $userProvider = Sentry::getUserProvider();
+                $model = $userProvider->createModel();
+                $user = $model->newQuery()->where("username", '=', $data['username'])->first();
+
                 $user_hospitals = (array) $data['user_hospitals'];
 
-                if ($user_hospitals) {
-                    $userProvider = Sentry::getUserProvider();
-                    $model = $userProvider->createModel();
-                    $user = $model->newQuery()->where("username", '=', $data['username'])->first();
-
-                    foreach ($user_hospitals as $hospital) {
-                        $uHospital = new UserHospital();
-                        $uHospital->hospital_id = $hospital;
-                        $uHospital->user_id = $user->id;
-                        $uHospital->save();
-                    }
-                }
+                add_user_hospitals($user_hospitals, $user);
                 send_response(array("status" => 1, "message" => "User registered successfully"));
             } else {
                 send_response(array("status" => 0, "errors" => array('An error occured')));
@@ -208,15 +201,18 @@ $app->post('/user/update', function () use ($app) {
             $user->first_name = $data['first_name'];
             $user->last_name = $data['last_name'];
             $user->phone_number = $data['phone_number'];
-            $user->location = $data['location'];
+            $user->location_id = $data['location_id'];
             $user->blood_group = $data['blood_group'];
 
-            $user->save();
+            $saved = $user->save();
+            
+            UserHospital::where("user_id", $user_id)->delete();            
+            add_user_hospitals((array) $data['user_hospitals'], $user);
         } catch (Cartalyst\Sentry\Users\UserNotFoundException $e) {
-            send_response(array("status" => 0, "errors" => array('User with email already exists')));
+            send_response(array("status" => 0, "errors" => array('Unsuccessful operation')));
         }
 
-        send_response(array("status" => 1, "message" => "User registered successfully"));
+        send_response(array("status" => 1, "message" => "User details updated {$saved}"));
     } else {
         $errors = $updateValidator->getValidator()->messages()->all();
         send_response(array("status" => 0, "errors" => $errors));
@@ -241,9 +237,21 @@ function get_user_attributes($user) {
     $attributes['created_at'] = $user->created_at;
     $attributes['updated_at'] = $user->updated_at;
     $attributes['username'] = $user->username;
+    $attributes['hospitals'] = UserHospital::whereRaw('user_id = ?', array($user->id))->get()->toArray();
 
 
 
 
     return $attributes;
+}
+
+function add_user_hospitals($user_hospitals, $user) {
+    if ($user_hospitals) {
+        foreach ($user_hospitals as $hospital) {
+            $uHospital = new UserHospital();
+            $uHospital->hospital_id = $hospital;
+            $uHospital->user_id = $user->id;
+            $uHospital->save();
+        }
+    }
 }
