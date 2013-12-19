@@ -69,7 +69,7 @@ $app->post('/hospital/broadcast', function () use ($app) {
 
     $hospital = get_hospital($hospital_id);
     $to = implode(",", $emails);
-    $subject = "{$hospital->hospital_name} needs blood";
+    $subject = "{$hospital['hospital_name']} needs blood";
 
     $headers = "MIME-Version: 1.0" . "\r\n";
     $headers .= "Content-type:text/html;charset=iso-8859-1" . "\r\n";
